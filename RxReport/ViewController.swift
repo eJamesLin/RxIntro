@@ -18,12 +18,12 @@ class ViewController: UIViewController {
 
     @IBAction func tapCheckbox1(_ sender: UIButton) {
         sender.isSelected = !sender.isSelected
-        agreeButton.isEnabled = checkbox1.isSelected && checkbox2.isSelected
+        updateButtonState()
     }
 
     @IBAction func tapCheckbox2(_ sender: UIButton) {
         sender.isSelected = !sender.isSelected
-        agreeButton.isEnabled = checkbox1.isSelected && checkbox2.isSelected
+        updateButtonState()
     }
 
     override func viewDidLoad() {
@@ -34,8 +34,11 @@ class ViewController: UIViewController {
         checkbox2.setTitle("unchecked", for: .normal)
         checkbox2.setTitle("checked", for: .selected)
 
-        agreeButton.isEnabled = checkbox1.isSelected && checkbox2.isSelected
+        updateButtonState()
     }
 
+    func updateButtonState() {
+        agreeButton.isEnabled = checkbox1.isSelected && checkbox2.isSelected
+    }
 }
 
