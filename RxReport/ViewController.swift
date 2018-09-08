@@ -16,7 +16,7 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var agreeButton: UIButton!
 
-    class ViewModel {
+    class ViewModel: NSObject {
         var item1checked: Bool = false {
             didSet {
                 updateAllAgree()
@@ -28,13 +28,8 @@ class ViewController: UIViewController {
             }
         }
 
-        var allAgree: Bool = false {
-            didSet {
-                allAgreeDidSet?(allAgree)
-            }
-        }
-
-        var allAgreeDidSet: ((Bool) -> Void)?
+        // KVO-enabled properties must be @objc dynamic
+        @objc dynamic var allAgree: Bool = false
 
         func updateAllAgree() {
             allAgree = item1checked && item2checked
@@ -53,13 +48,17 @@ class ViewController: UIViewController {
         viewModel.item2checked = sender.isSelected
     }
 
+    var observe: NSKeyValueObservation?
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        viewModel.allAgreeDidSet = { [weak self] allAgree in
-            self?.agreeButton.isEnabled = allAgree
-        }
-        viewModel.updateAllAgree()
+
+        observe =
+            viewModel.observe(\.allAgree,
+                              options: [.initial, .new]) { [weak self] (vm, _) in
+                self?.agreeButton.isEnabled = vm.allAgree
+            }
     }
 
     func setupUI() {
