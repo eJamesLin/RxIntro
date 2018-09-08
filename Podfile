@@ -7,4 +7,5 @@ use_frameworks!
 
 target "RxReport" do
     pod 'RxSwift'
+    pod 'RxCocoa'
 end
