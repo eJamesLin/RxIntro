@@ -28,17 +28,19 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        checkbox1.setTitle("unchecked", for: .normal)
-        checkbox1.setTitle("checked", for: .selected)
-        checkbox2.setTitle("unchecked", for: .normal)
-        checkbox2.setTitle("checked", for: .selected)
-
+        setupUI()
         updateButtonState()
     }
 
     func updateButtonState() {
         agreeButton.isEnabled = checkbox1.isSelected && checkbox2.isSelected
+    }
+
+    func setupUI() {
+        checkbox1.setTitle("unchecked", for: .normal)
+        checkbox1.setTitle("checked", for: .selected)
+        checkbox2.setTitle("unchecked", for: .normal)
+        checkbox2.setTitle("checked", for: .selected)
     }
 }
 
