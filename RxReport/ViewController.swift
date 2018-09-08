@@ -16,24 +16,50 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var agreeButton: UIButton!
 
+    class ViewModel {
+        var item1checked: Bool = false {
+            didSet {
+                updateAllAgree()
+            }
+        }
+        var item2checked: Bool = false {
+            didSet {
+                updateAllAgree()
+            }
+        }
+
+        var allAgree: Bool = false {
+            didSet {
+                allAgreeDidSet?(allAgree)
+            }
+        }
+
+        var allAgreeDidSet: ((Bool) -> Void)?
+
+        func updateAllAgree() {
+            allAgree = item1checked && item2checked
+        }
+    }
+
+    let viewModel = ViewModel()
+
     @IBAction func tapCheckbox1(_ sender: UIButton) {
         sender.isSelected = !sender.isSelected
-        updateButtonState()
+        viewModel.item1checked = sender.isSelected
     }
 
     @IBAction func tapCheckbox2(_ sender: UIButton) {
         sender.isSelected = !sender.isSelected
-        updateButtonState()
+        viewModel.item2checked = sender.isSelected
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        updateButtonState()
-    }
-
-    func updateButtonState() {
-        agreeButton.isEnabled = checkbox1.isSelected && checkbox2.isSelected
+        viewModel.allAgreeDidSet = { [weak self] allAgree in
+            self?.agreeButton.isEnabled = allAgree
+        }
+        viewModel.updateAllAgree()
     }
 
     func setupUI() {
