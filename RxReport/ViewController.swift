@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
 
 class ViewController: UIViewController {
 
@@ -16,23 +18,14 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var agreeButton: UIButton!
 
-    class ViewModel: NSObject {
-        var item1checked: Bool = false {
-            didSet {
-                updateAllAgree()
+    class ViewModel {
+        var item1checked = BehaviorRelay<Bool>(value: false)
+        var item2checked = BehaviorRelay<Bool>(value: false)
+        var allAgree: Observable<Bool>
+        init() {
+            allAgree = Observable.combineLatest(item1checked, item2checked) {
+                $0 && $1
             }
-        }
-        var item2checked: Bool = false {
-            didSet {
-                updateAllAgree()
-            }
-        }
-
-        // KVO-enabled properties must be @objc dynamic
-        @objc dynamic var allAgree: Bool = false
-
-        func updateAllAgree() {
-            allAgree = item1checked && item2checked
         }
     }
 
@@ -40,25 +33,31 @@ class ViewController: UIViewController {
 
     @IBAction func tapCheckbox1(_ sender: UIButton) {
         sender.isSelected = !sender.isSelected
-        viewModel.item1checked = sender.isSelected
+        viewModel.item1checked.accept(sender.isSelected)
     }
 
     @IBAction func tapCheckbox2(_ sender: UIButton) {
         sender.isSelected = !sender.isSelected
-        viewModel.item2checked = sender.isSelected
+        viewModel.item2checked.accept(sender.isSelected)
     }
 
-    var observe: NSKeyValueObservation?
+    var disposeBag = DisposeBag()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
 
-        observe =
-            viewModel.observe(\.allAgree,
-                              options: [.initial, .new]) { [weak self] (vm, _) in
-                self?.agreeButton.isEnabled = vm.allAgree
-            }
+        viewModel.allAgree.subscribe(
+            onNext: { [weak self] (allAgree) in
+                self?.agreeButton.isEnabled = allAgree
+            })
+            .disposed(by: disposeBag)
+
+        /*
+        viewModel.allAgree
+            .bind(to: agreeButton.rx.isEnabled)
+            .disposed(by: disposeBag)
+        */
     }
 
     func setupUI() {
