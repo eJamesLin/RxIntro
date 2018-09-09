@@ -50,14 +50,63 @@ class ViewController: UIViewController {
         viewModel.allAgree.subscribe(
             onNext: { [weak self] (allAgree) in
                 self?.agreeButton.isEnabled = allAgree
-            })
-            .disposed(by: disposeBag)
+        })
+        .disposed(by: disposeBag)
 
         /*
         viewModel.allAgree
             .bind(to: agreeButton.rx.isEnabled)
             .disposed(by: disposeBag)
         */
+
+        demoConcurrentAPICall()
+        demoSerialAPICall()
+    }
+
+    func demoConcurrentAPICall() {
+        let api1: Observable<String> = Observable.create { observer in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
+                observer.onNext("1")
+                observer.onCompleted()
+            })
+            return Disposables.create()
+        }
+
+        let api2: Observable<String> = Observable.create { observer in
+            observer.onNext("2")
+            observer.onCompleted()
+            return Disposables.create()
+        }
+
+        _ = Observable.combineLatest(api1, api2) { (r1, r2) in
+            return r1 + r2
+            }.subscribe(onNext: {
+                print("concurrent result " + $0)
+            })
+    }
+
+    func demoSerialAPICall() {
+        let api1: Observable<String> = Observable.create { observer in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
+                observer.onNext("A")
+                observer.onCompleted()
+            })
+            return Disposables.create()
+        }
+
+        func api2(input: String) -> Observable<String> {
+            return Observable<String>.create { (observer) -> Disposable in
+                observer.onNext(input + "B")
+                observer.onCompleted()
+                return Disposables.create()
+            }
+        }
+
+        _ = api1.flatMapLatest {
+                api2(input: $0)
+            }.subscribe(onNext: {
+                print("serial result " + $0)
+            })
     }
 
     func setupUI() {
